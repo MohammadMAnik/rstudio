@@ -35,3 +35,10 @@ descriptive.statistics <- function(myvariable) {
 
 descriptive.statistics(pew$age)
 
+# 15 multivariate inference statistical analysis
+
+# t-test
+# one sample t-test
+
+table(tess$XIDEO, useNA = 'always')
+t.test(tess$XIDEO, mu = 4)
