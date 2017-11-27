@@ -38,6 +38,15 @@ descriptive.statistics(pew$age)
 # 15 multivariate inference statistical analysis
 # t-test
 # one sample t-test
+setwd("/Users/kimjongha/Documents/github/rstudio")
+getwd()
+
+tess <- read.csv("dataset/TESS2_089_Trawalter_Client.csv", sep = ",", header = TRUE)
+
+class(tess)
+str(tess)
+names(tess)
+summary(tess)
 
 table(tess$XIDEO, useNA = 'always')
-t.test(tess$XIDEO, mu = 4)
+t.test(tess$XIDEO, mu = 3.934)
