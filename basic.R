@@ -101,11 +101,22 @@ bartlett.test(Q8r ~ other.female, data = tess)
 t.test(Q8r ~ other.female, var.equal = FALSE, data = tess)
 
 # Chi-square 
-# pew
+# data = pew
+pew <- read.csv("dataset/February_2012_csv.csv", sep = ",", header = TRUE)
+colnames(pew)
 
+table(pew$intuse, useNA = "always")
+table(pew$q1, useNA = "always")
 
+pew$intuse.r <- pew$intuse
+pew$life.quality <- pew$q1
 
+pew$intuse.r[pew$intuse == 8 | pew$intuse == 9] <- NA
+pew$life.quality[pew$q1 == 8 | pew$q1 == 9] <- NA
 
+table(pew$intuse.r, pew$life.quality, useNA = "always")
+
+chisq.test(table(pew$intuse.r, pew$life.quality))
 
 
 
