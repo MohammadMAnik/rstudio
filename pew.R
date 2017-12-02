@@ -38,15 +38,43 @@ descriptive.statistics(pew$age)
 # 15 multivariate inference statistical analysis
 # t-test
 # one sample t-test
-setwd("/Users/kimjongha/Documents/github/rstudio")
 getwd()
+setwd("/Users/kimjongha/Documents/github/rstudio")
 
-tess <- read.csv("dataset/TESS2_089_Trawalter_Client.csv", sep = ",", header = TRUE)
+tess <- read.csv(file = "dataset/TESS2_089_Trawalter_Client.csv", sep = ",", header = TRUE)
 
 class(tess)
 str(tess)
 names(tess)
 summary(tess)
 
+# one sample t-test
+
 table(tess$XIDEO, useNA = 'always')
-t.test(tess$XIDEO, mu = 3.934)
+tess$XIDEOr <- tess$XIDEO
+
+tess$XIDEOr[tess$XIDEO == -1] <- NA # miss values
+table(tess$XIDEOr)
+
+t.test(tess$XIDEOr, mu = 4)
+
+# paired sample t-test
+# tess$Q4, tess$Q8
+
+table(tess$Q4, useNA = 'always')
+table(tess$Q8, useNA = 'always')
+
+tess$Q4r <- tess$Q4
+tess$Q8r <- tess$Q8
+
+tess$Q4r[tess$Q4 == -1] <- NA
+tess$Q4r[tess$Q8 == -1] <- NA
+
+mean(tess$Q4r, na.rm = TRUE) ; sd(tess$Q4r, na.rm = TRUE)
+mean(tess$Q8r, na.rm = TRUE) ; sd(tess$Q8r, na.rm = TRUE)
+
+t.test(tess$Q4r, tess$Q8r, paired = TRUE) # paired t.test
+
+
+
+
