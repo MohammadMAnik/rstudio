@@ -75,6 +75,37 @@ mean(tess$Q8r, na.rm = TRUE) ; sd(tess$Q8r, na.rm = TRUE)
 
 t.test(tess$Q4r, tess$Q8r, paired = TRUE) # paired t.test
 
+# independent sample t-test
+# tess$Q8 "I stub my leg on a chair leg"
+# Ho : Mfemale = Mmale
+# Ha : Mfemale > Mmale
+table(tess$Q8, useNA = "always")
+tess$Q8r <- tess$Q8
+
+tess$Q8r[tess$Q8 == -1] <- NA
+table(tess$Q8r, useNA = "always")
+
+table(tess$XTESS089, useNA = "always")
+tess$other.female <- NA
+
+tess$other.female[tess$XTESS089 >= 13] <- 1
+tess$other.female[tess$XTESS089 <= 12] <- 0
+
+# statistics mean and variance
+aggregate(Q8r ~ other.female, data = tess, FUN = mean)
+aggregate(Q8r ~ other.female, data = tess, FUN = var)
+
+# Bartlett test of homogeneity of variance
+bartlett.test(Q8r ~ other.female, data = tess)
+
+t.test(Q8r ~ other.female, var.equal = FALSE, data = tess)
+
+# Chi-square 
+
+
+
+
+
 
 
 
