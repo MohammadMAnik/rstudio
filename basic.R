@@ -118,5 +118,38 @@ table(pew$intuse.r, pew$life.quality, useNA = "always")
 
 chisq.test(table(pew$intuse.r, pew$life.quality))
 
+# Correlation analysis
+# Pearson's r, Spearman's rho, Cramer's phi
 
+# Pearson's r
+setwd("/Users/kimjongha/Documents/github/rstudio")
+pew <- read.csv("dataset/February_2012_csv.csv", sep = ",", header = TRUE)
 
+head(pew)
+str(pew)
+
+table(pew$q2, useNA = "always")
+table(pew$educ, useNA = "always")
+
+pew$q2r <- pew$q2
+pew$educr <- pew$educ
+
+pew$q2r[pew$q2 == 98 | pew$q2 == 99] <- NA
+pew$educr[pew$educ == 8 | pew$educ == 9] <- NA
+
+hist(pew$q2r)
+hist(pew$educr)
+
+pew$log.q2r <- log((pew$q2r+1), 10)
+
+plot(pew$educr, pew$log.q2r, type = 'p')
+
+cor.test(pew$educr, pew$log.q2r, method = 'pearson')
+cor.test(pew$educr, pew$log.q2r, method = 'spearman')
+cor.test(pew$educr, pew$log.q2r, method = 'kendall')
+
+install.packages("hexbin")
+library(hexbin)
+
+hex.plot <- hexbin(pew$educr, pew$log.q2r, xbins = 6)
+plot(hex.plot)
