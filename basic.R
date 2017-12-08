@@ -1,3 +1,20 @@
+# indexing
+rm(list=ls())
+getwd()
+
+tess <- read.csv(file = "rstudio/dataset/TESS2_089_Trawalter_Client.csv", header = TRUE)
+dim(tess)
+
+want.var <- c('PPGENDER', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5')
+survey <- tess[, want.var]
+
+dim(survey)
+survey2 <- tess[(tess$PPGENDER == 2), want.var]
+survey1 <- tess[(tess$PPGENDER == 1), want.var]
+
+t.test(survey1, survey2)
+
+
 setwd("/Users/kimjongha/Documents/rstudio")
 getwd()
 
