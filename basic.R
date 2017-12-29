@@ -170,3 +170,8 @@ library(hexbin)
 
 hex.plot <- hexbin(pew$educr, pew$log.q2r, xbins = 6)
 plot(hex.plot)
+
+# test
+t.test(data)
+
+
