@@ -60,3 +60,5 @@ var(pew$q16m, na.rm = TRUE)
 # standard deviation
 sd(pew$q16m, na.rm = TRUE)
 
+# 2018.1.1
+
