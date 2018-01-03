@@ -2,6 +2,7 @@
 
 # two-sample t-test
 # independent groups
+LungCapData <- read.table("dataset/LungCapData.txt", sep = '\t', header = TRUE)
 
 # We will be exploring the relationship between Smoking and Lung Capacity.
 # Ho : mean lung cap of smokers = of non smokers
@@ -24,12 +25,21 @@ t.test(LungCap[Smoke == "no"], LungCap[Smoke == "yes"])
 library(car)
 
 # We would like to compare variations in Lung Capacities separated by the Smoking status
+# Levene's Test for equality of variances
 leveneTest(LungCap ~ Smoke)
 
 # Here we can see that with a small P value.
 # We should reject the null hypothesis and conclude that we have evidence to believe population variances are
 # not equal and use the non-equal assumption
 
+# Bartlett's Test for equality of variance
+bartlett.test(LungCap ~ Smoke)
+
 # variance
 var(LungCap[Smoke == "no"])
 var(LungCap[Smoke == "yes"])
+
+# normality test
+# Shapiro-Wilk normality test
+shapiro.test(LungCap)
+
