@@ -60,5 +60,35 @@ var(pew$q16m, na.rm = TRUE)
 # standard deviation
 sd(pew$q16m, na.rm = TRUE)
 
-# 2018.1.1
+# data = LungCapData
+LungCapData <- read.table("rstudio/dataset/LungCapData.txt", header = TRUE)
 
+# standard deviation by taking the square root of the variance
+sqrt(var(LungCapData$LungCap))
+
+# minimum observation
+min(LungCapData$LungCap)
+
+# maximum obseravtion
+max(LungCapData$LungCap)
+
+# range
+range(LungCapData$LungCap)
+
+# quantile 
+quantile(LungCapData$LungCap, probs = 0.90)
+
+# quantile 25%, 50%, 75%
+quantile(LungCapData$LungCap, probs = c(0.25, 0.50, 0.75))
+
+# Pearson's correlation using the "cor" command
+cor(LungCapData$LungCap, LungCapData$Age)
+
+# Spearman's correlation
+cor(LungCapData$LungCap, LungCapData$Age, method = "spearman")
+
+# covariance
+cov(LungCapData$LungCap, LungCapData$Age)
+
+# summary
+summary(LungCapData)
