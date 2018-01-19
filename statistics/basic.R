@@ -27,8 +27,8 @@ summary(pew$age)
 
 # descriptive statistics
 descriptive.statistics <- function(myvariable) {
-  myvar.length.missing.include <- length(myvariable)
-  myvar.length.missing.exclude <- length(myvariable[!is.na(myvariable)])
+  myvar.length.missing.include <- length(myvariable) # cases
+  myvar.length.missing.exclude <- length(myvariable[!is.na(myvariable)]) # cases except missing value
   myvar.sum <- sum(myvariable, na.rm = TRUE)
   myvar.mean <- mean(myvariable, na.rm = TRUE)
   myvar.median <- median(myvariable, na.rm = TRUE)

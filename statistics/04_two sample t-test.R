@@ -4,19 +4,19 @@
 # independent groups
 LungCapData <- read.table("dataset/LungCapData.txt", sep = '\t', header = TRUE)
 
-# We will be exploring the relationship between Smoking and Lung Capacity.
-# Ho : mean lung cap of smokers = of non smokers
-# two-sided test
-# assume non-equal variance
 LungCap <- LungCapData$LungCap
 Smoke <- LungCapData$Smoke
 
+
+# We will be exploring the relationship between Smoking and Lung Capacity.
+# two sample t-test
+# Ho : mean lung cap of smokers = of non smokers
+# two-sided test
+# assume non-equal variance
 t.test(LungCap ~ Smoke)
+t.test(LungCap ~ Smoke, mu = 0, alt = "two.sided", conf = 0.95, var.eq = F, paired = F) # same argument
 
-# same argument
-t.test(LungCap ~ Smoke, mu = 0, alt = "two.sided", conf = 0.95, var.eq = F, paired = F)
-
-# two separate groups we would like compared
+# two separate groups which is smoke yes or no, we would like compared
 t.test(LungCap[Smoke == "no"], LungCap[Smoke == "yes"])
 
 # Levene's test command

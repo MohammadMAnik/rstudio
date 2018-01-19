@@ -27,7 +27,7 @@ table(pew$q16, pew$q16m, useNA = 'always')
 # total cases including missing value
 length(pew$q16)
 
-# except missing value
+# cases except missing value
 length(pew$q16[!is.na(pew$q16m)])
 
 # sum expect missing value
