@@ -35,5 +35,16 @@ cor(st)
 pairs(st)
 
 # multiple linear regression
-model1 <- lm(Life.Exp ~ ., data = st)
-summary(model1)
+model11 <- lm(Life.Exp ~ ., data = st)
+summary(model11)
+
+model.step <- step(model11, direction = "backward")
+summary(model.step)
+
+confint(model.step)
+
+predict(model.step, list(Population=4000, Murder=10.5, HS.Grad=48, Frost=100))
+
+par(mfrow=c(2,2))
+plot(model.step)
+
