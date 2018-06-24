@@ -4,7 +4,7 @@ library(dplyr)
 
 # tbl_df
 iris
-i2 <- tbl_df(iris)
+i2 <- tbl_df(iris) # 앞에 5개 행만 출력함
 class(i2)
 i2
 
