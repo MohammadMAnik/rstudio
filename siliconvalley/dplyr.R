@@ -4,7 +4,7 @@ library(dplyr)
 
 # tbl_df
 iris
-i2 <- tbl_df(iris) # ì•žì— 5ê°œ í–‰ë§Œ ì¶œë ¥í•¨
+i2 <- tbl_df(iris) # ¾Õ¿¡ 5°³ Çà¸¸ Ãâ·Â
 class(i2)
 i2
 
