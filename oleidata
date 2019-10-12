@@ -224,35 +224,47 @@ learner_course_cnt <-
 
 learner_course_cnt$num <- seq(1:1496)
 table(learner_course_cnt$st_cnt)
+barplot(learner_course_cnt$st_cnt)
+hist(learner_course_cnt$st_cnt)
 
 # 수료여부
-table(learner$course_completion_status_code)
+(counts <- table(learner$course_completion_status_code))
 #1 진행 중, 2 수료, 3 출석 기준 미달, 4 점수 기준 미달, 5 평가항목 미진행
 #1      2      3      4      5 
 #17 178481   5206 103703      2 
+barplot(counts, horiz = FALSE, names.arg = c("진행 중", "수료", "출석기준 미달", "점수기준 미달", "평가항목 미진행"), ylab = "수강인원", ylim = c(0, 200000))
 
+plot(learner$total_learning_time_in_seconds)
+plot(learner$hhmmss)
 
+# 수강시작일별 수강생수
+start_learner <-
+  learner %>%
+  group_by(start_date) %>%
+  summarise(st_learner_cnt = n())
 
+start_learner <- subset(start_learner, select = -c(yymm))
+start_learner$yymmdd <- as.Date(start_learner$start_date)
+start_learner$year <- as.character(start_learner$yymmdd, '%Y')
+start_learner$month <- as.character(start_learner$yymmdd, '%m')
 
-# 수료율별 수료여부
-# 월별 수강신청 수 vs 학습을 1초라도 한 학습자 수
+#년월 합치기
+library(tidyr)
+start_learner <- unite(data = start_learner, col = "yymm", year, month, sep = "-")
 
+# 년월별 그룹핑
+library(dplyr)
+yymm_learner_cnt <-
+  start_learner %>%
+  group_by(yymm) %>%
+  summarise_at(vars(st_learner_cnt), funs(sum))
 
+yymm_learner_cnt$st_learner_cnt
 
+yymm_lcnt <- c(1105,950,1497,1426,2158,2839,2128,4876,5763,3070,4254,4687,5589,2752,2589,3292,2775,5559,3418,3210,3330,1491,2567,2782,3180,4581,3595,3435,3133,5317,2206,4167,3065,1860,690,9285,1478,5254,2960,2477,3265,7755,5328,4246,5422,3076,2801,7892,6044,5414,3391,2435,2820,3060)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+yymm_lcnt_ts <- ts(yymm_lcnt, start = c(2015, 4), end = c(2019, 9), frequency = 12)
+plot.ts(yymm_lcnt_ts)
 
 
 
