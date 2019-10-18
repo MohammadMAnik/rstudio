@@ -1,32 +1,54 @@
 getwd()
 setwd()
 
-install.packages("data.table")
-library(data.table)
-mydata <- fread("data_learningtime.csv", encoding = "UTF-8")
-
-library(ggplot2)
-
 search()
 system.time(search())
 
-attach(mydata)
-detach(mydata)
+install.packages("data.table")
+library(data.table)
+library(ggplot2)
+library(dplyr)
 
+mydata <- fread("data_learningtime.csv", encoding = "UTF-8")
+
+dim(mydata)
+# 394204  18
 summary(mydata)
 head(mydata, 100)
 names(mydata)
 
-# dplyr
-library(dplyr)
+# 전체 수료여부
+table(mydata$course_completion_status_code)
+#1      2      3      4      5 
+#58994 182482   5294 147432      2
+
+plot(table(mydata$course_completion_status_code), type = "b", lwd = 3)
+
+# 진도율
+table(mydata$progress)
+# too much
+
+# Kernel density plot
+plot(density(mydata$progress))
+
+# Filled density plot
+polygon(density(mydata$progress), col = "blue", border = "blue")
+
+# 진도율 구간 나누기
+mydata$progress_rg <- 
+  ifelse(mydata$progress == 100, 100,
+  ifelse(mydata$progress >=  80, 80,
+  ifelse(mydata$progress >=  60, 60,
+  ifelse(mydata$progress >=  20, 20,
+  ifelse(mydata$progress >=  10, 10,
+  ifelse(mydata$progress == 0, 0, 1))))))
+
+barplot(table(mydata$progress_rg))
 
 # 1초라도 학습한 학습자 (진도율이 0%를 초과한 학습자)
 learner <-
   mydata %>% 
   filter(total_learning_time_in_seconds > 0)
-
-attach(learner)
-detach(learner)
 
 dim(learner)
 #287409
@@ -49,9 +71,6 @@ distinct_title
 
 dim(distinct_title)
 #1496 18
-
-attach(distinct_title)
-detach(distinct_title)
 
 str(distinct_title)
 mode(distinct_title)
@@ -122,12 +141,12 @@ course_count
 # 구간 나누기 (ifelse)
 course_count$cnt_group <- course_count$cnt
 course_count$cnt_group <- ifelse(course_count$cnt_group >= 200, "200~",
-                          ifelse(course_count$cnt_group >= 100, "100~",
-                          ifelse(course_count$cnt_group >= 50, "50~",
-                          ifelse(course_count$cnt_group >= 20, "20~",
-                          ifelse(course_count$cnt_group >= 10, "10~",
-                          ifelse(course_count$cnt_group >= 5, "5~",
-                          ifelse(course_count$cnt_group >= 2, "2~", "1")))))))
+                                 ifelse(course_count$cnt_group >= 100, "100~",
+                                        ifelse(course_count$cnt_group >= 50, "50~",
+                                               ifelse(course_count$cnt_group >= 20, "20~",
+                                                      ifelse(course_count$cnt_group >= 10, "10~",
+                                                             ifelse(course_count$cnt_group >= 5, "5~",
+                                                                    ifelse(course_count$cnt_group >= 2, "2~", "1")))))))
 
 head(course_count)
 course_cnt_group2 <- sort(table(course_count$cnt_group), decreasing = TRUE)
@@ -208,7 +227,7 @@ learner_dst_cnt <-
   group_by(service_title) %>%
   summarize(st_cnt = n()) %>%
   arrange(desc(st_cnt))
-      
+
 # 수료한 학습자 (course_completion_status_code == 2)
 dim(learner)
 #287409
@@ -265,7 +284,3 @@ yymm_lcnt <- c(1105,950,1497,1426,2158,2839,2128,4876,5763,3070,4254,4687,5589,2
 
 yymm_lcnt_ts <- ts(yymm_lcnt, start = c(2015, 4), end = c(2019, 9), frequency = 12)
 plot.ts(yymm_lcnt_ts)
-
-
-
-
