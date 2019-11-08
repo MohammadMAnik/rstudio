@@ -34,6 +34,14 @@ round(114018/303490, 3)*100
 # table
 table(OprResult$No)
 table(OprResult$Title)
+table(OprResult$CompleteSum)
+
+table(OprResult$No, OprResult$Year)
+table(OprResult$CompleteSum, OprResult$No)
+
+# xtabs
+xtabs(formula = CompleteSum ~ No, data = OprResult)
+xtabs(formula = CompleteSum ~ Year, data = OprResult)
 
 # aggregate()
 aggregate(x=OprResult$CompleteSum, by=list(OprResult$No), FUN=sum, na.rm=TRUE)
@@ -46,6 +54,28 @@ aggregate(x=OprResult$CompleteSum, by=list(OprResult$Company), FUN=sum, na.rm=TR
 by(data=OprResult$CompleteSum, INDICES=OprResult$No, na.rm=TRUE, FUN=sum)
 by(data=OprResult$CompleteSum, INDICES=OprResult$Year, na.rm=TRUE, FUN=sum)
 by(data=OprResult$CompleteSum, INDICES=OprResult[, "SubOT"], na.rm=TRUE, FUN=sum)
+
+# rowsum()
+rowsum(x=OprResult$CompleteSum, group=OprResult$No, na.rm=TRUE)
+rowsum(x=OprResult$CompleteSum, group=OprResult$Year, na.rm=TRUE)
+rowsum(x=OprResult$CompleteSum, group=OprResult$Company, na.rm=TRUE)
+
+# sqldf()
+install.packages("sqldf")
+library(sqldf)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
