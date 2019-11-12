@@ -6,7 +6,6 @@ setwd("D:/rstudio/ons")
 library(dplyr) # tbl_df
 
 OprResult <- read.csv("OprResult.csv", header=TRUE)
-
 names(OprResult)
 
 # name() modify
@@ -18,6 +17,7 @@ names(OprResult) <- c("No", "Title", "Year", "OprType", "SubOT", "Cardinal",
 # save
 write.csv(x=OprResult, file="OprResult.csv", row.names=FALSE)
 
+# summary
 dim(OprResult)
 str(OprResult)
 
@@ -60,35 +60,7 @@ rowsum(x=OprResult$CompleteSum, group=OprResult$No, na.rm=TRUE)
 rowsum(x=OprResult$CompleteSum, group=OprResult$Year, na.rm=TRUE)
 rowsum(x=OprResult$CompleteSum, group=OprResult$Company, na.rm=TRUE)
 
-# sqldf()
-install.packages("sqldf")
-library(sqldf)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# 이후는 OprResult.join.R에서 분석
 
 
 
