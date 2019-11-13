@@ -71,10 +71,21 @@ Content_Year <- OprResult.join %>%
   mutate(Rate = round(CompleteSum/EduSum*100, 1)) %>%
   arrange(CntId)
 
-Content_Year_Under10 <- Content_Year %>%
-  filter(CntId <= 10)
+# Correlation Positive > .70
+Upper_70 <- Content_Year %>%
+  group_by(CntId) %>%
+  summarise(Cor = cor(Year, EduSum)) %>%
+  filter(Cor > 0.7)
 
-ggplot(Content_Year_Under10, aes(Year, EduSum)) +
+# Inner Join (sqldf 설치, 로딩 다시 해야 함)
+Upper_70.join <- sqldf("select *
+      from Upper_70
+      inner join Content_Year
+      on Upper_70.CntId = Content_Year.CntId")
+
+# graph
+ggplot(Upper_70.join, aes(Year, EduSum)) +
   geom_line() +
   facet_wrap(~ CntId)
+
 
