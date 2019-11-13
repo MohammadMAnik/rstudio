@@ -88,7 +88,54 @@ ggplot(Upper_70.join, aes(Year, EduSum)) +
   geom_line() +
   facet_wrap(~ CntId)
 
+# 연도별 교육인원이 가장 많은 과정
+# 2016년
+Content_Year %>%
+  filter(Year == 2016) %>%
+  arrange(desc(EduSum)) %>%
+  head(20)
+  
+# 2017년
+Content_Year %>%
+  filter(Year == 2017) %>%
+  arrange(desc(EduSum)) %>%
+  head(20)
 
+# 2018년
+Content_Year %>%
+  filter(Year == 2018) %>%
+  arrange(desc(EduSum)) %>%
+  head(20)
 
+# 2019년
+Content_Year %>%
+  filter(Year == 2019) %>%
+  arrange(desc(EduSum)) %>%
+  head(20)
+
+# 연도별 수료인원이 가장 많은 과정
+# 2016년
+Content_Year %>%
+  filter(Year == 2016) %>%
+  arrange(desc(CompleteSum)) %>%
+  head(20)
+
+# 2017년
+Content_Year %>%
+  filter(Year == 2017) %>%
+  arrange(desc(CompleteSum)) %>%
+  head(20)
+
+# 2018년
+Content_Year %>%
+  filter(Year == 2018) %>%
+  arrange(desc(CompleteSum)) %>%
+  head(20)
+
+# 2019년
+Content_Year %>%
+  filter(Year == 2019) %>%
+  arrange(desc(CompleteSum)) %>%
+  head(20)
 
 
