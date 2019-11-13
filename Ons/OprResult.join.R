@@ -89,3 +89,6 @@ ggplot(Upper_70.join, aes(Year, EduSum)) +
   facet_wrap(~ CntId)
 
 
+
+
+
