@@ -5,11 +5,11 @@ setwd("D:/rstudio/ons")
 
 ## inner join, two tables
 
-# CntList.csv
+## CntList.csv
 CntList <- read.csv("CntList.csv", header=TRUE)
 names(CntList)
 
-# OprResult.csv
+## OprResult.csv
 OprResult <- read.csv("OprResult.csv", header=TRUE)
 names(OprResult)
 
@@ -65,11 +65,10 @@ ggplot(Content, aes(CntId, Rate)) +
 
 # 과정별, 연도별, 운영실적
 Content_Year <- OprResult.join %>%
-  select(CntId, Year, EduSum, CompleteSum) %>%
+  select(CntId, CntTitle, Year, EduSum, CompleteSum) %>%
   group_by(CntId, Year) %>%
   summarise_each(funs(sum(., na.rm=TRUE))) %>%
-  mutate(Rate = round(CompleteSum/EduSum*100, 1)) %>%
-  arrange(CntId)
+  mutate(Rate = round(CompleteSum/EduSum*100, 1)) #%>% arrange(CntId)
 
 # Correlation Positive > .70
 Upper_70 <- Content_Year %>%
@@ -88,7 +87,7 @@ ggplot(Upper_70.join, aes(Year, EduSum)) +
   geom_line() +
   facet_wrap(~ CntId)
 
-# 연도별 교육인원이 가장 많은 과정
+## 연도별 교육인원이 가장 많은 과정
 # 2016년
 Content_Year %>%
   filter(Year == 2016) %>%
@@ -113,7 +112,7 @@ Content_Year %>%
   arrange(desc(EduSum)) %>%
   head(20)
 
-# 연도별 수료인원이 가장 많은 과정
+## 연도별 수료인원이 가장 많은 과정
 # 2016년
 Content_Year %>%
   filter(Year == 2016) %>%
@@ -137,5 +136,52 @@ Content_Year %>%
   filter(Year == 2019) %>%
   arrange(desc(CompleteSum)) %>%
   head(20)
+
+## ggplot, geom_bar()
+Content_Year %>%
+  filter(Year == 2019) %>%
+  #subset(CompleteSum > 100)
+  ggplot(aes(x=CntId, y=CompleteSum)) +
+  geom_bar(stat="identity") +
+  geom_boxplot(alpha=0.2, colour="maroon3") #theme_bw()
+
+## ggplot (연습)
+Content_Year %>%
+  #filter(Year == 2019)
+  #subset(CompleteSum > 100)
+  ggplot(aes(reorder(x=rownames(CntId), y=CompleteSum, colour=factor(Year)))) +
+  facet_wrap(~ Year) +
+  geom_point()
+  #geom_boxplot()
+  #theme_bw()
+
+Content_Year %>%
+  filter(CompleteSum > 500) %>%
+  ggplot(aes(x=reorder(CntId, CompleteSum), y=CompleteSum, label=CntId)) +
+  #facet_wrap(~ Year) +
+  geom_bar(stat="identity") +
+  geom_text()
+
+Content_Year %>%
+  filter(Year == 2019) %>%
+  filter(CompleteSum > 500) %>%
+  ggplot(aes(x=reorder(CntId, CompleteSum), y=CompleteSum, label=CntId)) +
+  #facet_wrap(~ Year) +
+  geom_bar(stat="identity") +
+  geom_text()
+
+## 최대한 친절하게 쓴 R로 그래프 그리기(https://kuduz.tistory.com/1077)
+# OprResult.join
+OprResult.join %>%
+  select(CntId, Year, EduSum, CompleteSum) %>%
+  group_by(CntId, Year) %>%
+  summarise_each(funs(sum(., na.rm=TRUE))) %>%
+  mutate(Rate = round(CompleteSum/EduSum*100, 1)) %>%
+  filter(Year == 2018) %>%
+  filter(CompleteSum > 500) %>%
+  ggplot(aes(x=reorder(CntId, CompleteSum), y=CompleteSum, label=CntId)) +
+  #facet_wrap(~ Year) +
+  geom_bar(stat="identity") +
+  geom_text()
 
 
