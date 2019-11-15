@@ -170,18 +170,107 @@ Content_Year %>%
   geom_bar(stat="identity") +
   geom_text()
 
+## 개발연도에 따른 연도별 교육인원
+OprResult.join %>%
+  ggplot(aes(x=CntId, y=EduSum)) +
+  geom_point(aes(colour=factor(DevYear)))
+
+## 개발연도에 따른 연도별 수료인원
+OprResult.join %>%
+  ggplot(aes(x=CntId, y=CompleteSum)) +
+  geom_point(aes(colour=factor(DevYear)))
+
 ## 최대한 친절하게 쓴 R로 그래프 그리기(https://kuduz.tistory.com/1077)
-# OprResult.join
+## 연도별 상위 20과정 (수료인원, 예시)
+OprResult.join %>%
+  select(CntId, Year, EduSum, CompleteSum) %>%
+  filter(!is.na(CompleteSum)) %>%
+  group_by(CntId, Year) %>%
+  summarise_each(funs(sum(., na.rm=TRUE))) %>%
+  #mutate(Rate = round(CompleteSum/EduSum*100, 1)) %>%
+  filter(Year == 2016) %>%
+  head(10) %>%
+  #filter(CompleteSum > 500) %>%
+  ggplot(aes(x=reorder(CntId, CompleteSum), y=CompleteSum, label=CntId)) +
+  #facet_wrap(~ Year) +
+  geom_point() + #aes(colour=factor(CntId)))
+  #geom_bar(stat="identity") +
+  geom_text()
+
+# 연도별 교육인원 상위 20과정 (2016년)
 OprResult.join %>%
   select(CntId, Year, EduSum, CompleteSum) %>%
   group_by(CntId, Year) %>%
   summarise_each(funs(sum(., na.rm=TRUE))) %>%
-  mutate(Rate = round(CompleteSum/EduSum*100, 1)) %>%
-  filter(Year == 2018) %>%
-  filter(CompleteSum > 500) %>%
-  ggplot(aes(x=reorder(CntId, CompleteSum), y=CompleteSum, label=CntId)) +
-  #facet_wrap(~ Year) +
-  geom_bar(stat="identity") +
-  geom_text()
+  filter(Year == 2016) %>%
+  arrange(desc(EduSum)) %>%
+  head(20) %>%
+  ggplot(aes(x=reorder(CntId, -EduSum), y=EduSum, label=CntId)) +
+  geom_bar(stat="identity")
 
+# 연도별 수료인원 상위 20과정 (2016년)
+OprResult.join %>%
+  select(CntId, Year, EduSum, CompleteSum) %>%
+  group_by(CntId, Year) %>%
+  summarise_each(funs(sum(., na.rm=TRUE))) %>%
+  filter(Year == 2016) %>%
+  arrange(desc(CompleteSum)) %>%
+  head(20) %>%
+  ggplot(aes(x=reorder(CntId, -CompleteSum), y=CompleteSum, label=CntId)) +
+  geom_bar(stat="identity")
 
+## 특정분야 등등
+ggplot(subset(OprResult.join), aes(x=CntId, y=CompleteSum)) +
+  facet_wrap(~ Cardinal) +
+  geom_point(aes(colour=factor(DevYear)))
+
+## 상관관계 (교육인원-수료인원)
+# 상관계수
+Corr_EC <- OprResult.join %>%
+  select(CntId, Year, EduSum, CompleteSum) %>%
+  group_by(CntId, Year) %>%
+  summarise_each(funs(sum(., na.rm=TRUE)))
+  
+with(Corr_EC, plot(CompleteSum, EduSum))
+
+with(Corr_EC, cor(CompleteSum, EduSum, method="pearson"))
+with(Corr_EC, cor(CompleteSum, EduSum, method="kendall"))
+with(Corr_EC, cor(CompleteSum, EduSum, method="spearman"))
+
+with(Corr_EC, cor.test(CompleteSum, EduSum, method="pearson"))
+
+# 상관분석 시각화
+library(psych)
+pairs.panels(Corr_EC)
+
+## 단순회귀분석
+lm.out <- lm(Corr_EC$CompleteSum ~ Corr_EC$EduSum)
+summary(lm.out)
+anova(lm.out)
+plot(Corr_EC$CompleteSum ~ Corr_EC$EduSum)
+abline(lm.out, col="red")
+par(mfrow=c(2,2))
+plot(lm.out)
+
+lm.out$fitted[144]
+lm.out$residuals[144]
+
+par(mfrow=c(1,1))
+plot(cooks.distance(lm.out))
+
+## 다중회귀분석
+Model <- lm(CompleteSum ~ Year + EduSum, data=Corr_EC)
+summary(Model)
+
+Model.step <- step(Model, direction="backward")
+summary(Model.step)
+confint(Model.step)
+predict(Model.step, list(Year=2019, EduSum=1000))
+
+par(mfrow=c(2,2))
+plot(Model.step)
+
+## 정규성 검정
+par(mfrow=c(1,1))
+qqnorm(Corr_EC$EduSum)
+qqline(Corr_EC$EduSum)
