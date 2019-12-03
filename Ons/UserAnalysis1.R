@@ -1,5 +1,9 @@
+# learning time analysis
+
+#rm(list=ls())
+
 getwd()
-setwd()
+setwd("D:/rstudio/ons")
 
 search()
 system.time(search())
@@ -9,50 +13,77 @@ library(data.table)
 library(ggplot2)
 library(dplyr)
 
-mydata <- fread("data_learningtime.csv", encoding = "UTF-8")
+LearningTime <- fread("LearningTime.csv", encoding = "UTF-8")
 
-dim(mydata)
+dim(LearningTime)
 # 394204  18
-summary(mydata)
-head(mydata, 100)
-names(mydata)
+
+summary(LearningTime)
+head(LearningTime, 100)
+names(LearningTime)
 
 # 전체 수료여부
-table(mydata$course_completion_status_code)
+table(LearningTime$course_completion_status_code)
 #1      2      3      4      5 
 #58994 182482   5294 147432      2
 
-plot(table(mydata$course_completion_status_code), type = "b", lwd = 3)
+barplot(table(LearningTime$course_completion_status_code), type = "b", lwd = 3)
 
-# 진도율
-table(mydata$progress)
-# too much
+# 진도율 (too much)
+plot(LearningTime$progress,
+     main = "학습자 진도율(전체)",
+     ylab = "진도율",
+     xlab = "학습자",
+     pch = 1,
+     cex = 0.8,
+     las = 1)
 
-# 정규성검정
-qqnorm(mydata$progress)
-qqline(mydata$progress)
-qqline(mydata$progress, main = "Q-Q Plot: progress", col = "blue")
+idx <- seq(1:394204)
+LearningTime$idx <- idx
+
+write.csv(LearningTime, file = "LearningTime.csv")
+summary(LearningTime)
+
+gender <- LearningTime[, c("idx", "gender_code", "progress")]
+
+# by gender
+gender %>%
+  ggplot(aes(x=idx, y=progress, colour=gender_code)) +
+  geom_point(size=0.5) #size=2(defalut)
+
+gender %>%
+  ggplot(aes(x=idx, y=progress, colour=gender_code)) +
+  geom_point(size=1) #size=2(defalut)
+
+table(LearningTime$progress)
+
+# histogram
+hist(LearningTime$progress,
+     main = "진도율 히스토그램",
+     xlab = "진도율",
+     ylab = "빈도수",
+     col = "maroon")
 
 # Kernel density plot
-plot(density(mydata$progress))
+plot(density(LearningTime$progress))
 
 # Filled density plot
-polygon(density(mydata$progress), col = "blue", border = "blue")
+polygon(density(LearningTime$progress), col = "blue", border = "blue")
 
 # 진도율 구간 나누기
-mydata$progress_rg <- 
-  ifelse(mydata$progress == 100, 100,
-  ifelse(mydata$progress >=  80, 80,
-  ifelse(mydata$progress >=  60, 60,
-  ifelse(mydata$progress >=  20, 20,
-  ifelse(mydata$progress >=  10, 10,
-  ifelse(mydata$progress == 0, 0, 1))))))
+LearningTime$progress_rg <- 
+  ifelse(LearningTime$progress == 100, 100,
+         ifelse(LearningTime$progress >=  80, 80,
+                ifelse(LearningTime$progress >=  60, 60,
+                       ifelse(LearningTime$progress >=  20, 20,
+                              ifelse(LearningTime$progress >=  10, 10,
+                                     ifelse(LearningTime$progress == 0, 0, 1))))))
 
-barplot(table(mydata$progress_rg))
+barplot(table(LearningTime$progress_rg))
 
 # 1초라도 학습한 학습자 (진도율이 0%를 초과한 학습자)
 learner <-
-  mydata %>% 
+  LearningTime %>% 
   filter(total_learning_time_in_seconds > 0)
 
 dim(learner)
@@ -95,7 +126,7 @@ table(chasi)
 
 # 과정수 내림차순
 course_count <-
-  mydata %>% 
+  LearningTime %>% 
   filter(total_learning_time_in_seconds > 0) %>%
   select(id, name, gender_code, company_name, date_of_birth, address_1) %>%
   group_by(id) %>%
@@ -161,42 +192,42 @@ barplot(course_cnt_group2)
 
 # 수강 많이 한 학습자
 learner1 <-
-  mydata %>% 
+  LearningTime %>% 
   filter(total_learning_time_in_seconds > 0) %>%
   filter(id == 'dungoul3@nate.com') #이종헌, 270
 
 sort(table(learner1$service_title), decreasing = TRUE)
 
 learner2 <-
-  mydata %>%
+  LearningTime %>%
   filter(total_learning_time_in_seconds > 0) %>%
   filter(id == 'nameserver@korea.com') #주종수, 200
 
 sort(table(learner2$service_title), decreasing = TRUE)
 
 learner3 <-
-  mydata %>% 
+  LearningTime %>% 
   filter(total_learning_time_in_seconds > 0) %>%
   filter(id == 'jwpark@koreatech.ac.kr') #박진우, 129
 
 sort(table(learner3$service_title), decreasing = TRUE)
 
 learner4 <-
-  mydata %>% 
+  LearningTime %>% 
   filter(total_learning_time_in_seconds > 0) %>%
   filter(id == 'ndolcia@naver.com') #김남중, 128
 
 sort(table(learner4$service_title), decreasing = TRUE)
 
 learner5 <-
-  mydata %>% 
+  LearningTime %>% 
   filter(total_learning_time_in_seconds > 0) %>%
   filter(id == 'erun7meu1@hanmail.net') #이동언, 118
 
 sort(table(learner5$service_title), decreasing = TRUE)
 
 learner6 <-
-  mydata %>% 
+  LearningTime %>% 
   filter(total_learning_time_in_seconds > 0) %>%
   filter(id == 'vosej27@koreatech.ac.kr') #이지은, 84
 
