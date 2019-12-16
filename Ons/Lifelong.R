@@ -66,10 +66,10 @@ TitleEC %>%
   arrange(desc(EduSum)) %>%
   head(20) %>%
   ggplot(aes(x=reorder(Title, EduSum), y=EduSum)) +
-  geom_bar(stat="identity", fill="cyan2") +
+  geom_bar(stat="identity", fill="darkgray") +
   theme(axis.text.x=element_text(angle=90)) +
   coord_flip() +
-  geom_text(aes(label=EduSum), vjust=0.3, hjust=1.5, colour="black",
+  geom_text(aes(label=EduSum), vjust=0.3, hjust=1.5, colour="white",
             position=position_dodge(.9), size=4) +
   geom_text(aes(label=CompleteRate), vjust=1, colour="blue",
             position=position_dodge(.9), size=3)
