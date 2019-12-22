@@ -106,3 +106,61 @@ diamonds %>% filter(price != 1000)
 diamonds %>% filter(carat > 2, price < 14000)
 diamonds %>% filter(carat > 2 & price < 14000)
 diamonds %>% filter(carat < 1 | carat > 5)
+
+# slice
+diamonds %>% slice(1:5)
+diamonds %>% slice(1:5, 8, 15:20)
+diamonds %>% slice(-1)
+
+# mutate
+diamonds %>% mutate(price/carat)
+diamonds %>% select(carat, price) %>% mutate(price/carat)
+diamonds %>% select(carat, price) %>% mutate(ratio=price/carat)
+diamonds %>%
+  select(carat, price) %>%
+  mutate(Ratio=price/carat, Double=Ratio*2)
+
+# summarize
+summarize(diamonds, mean(price))
+diamonds %>% summarize(mean(price))
+diamonds %>% 
+  summarize(AvgPrice=mean(price),
+            MedianPrice=median(price),
+            AvgCarat=mean(carat))
+
+# group_by
+diamonds %>%
+  group_by(cut) %>%
+  summarize(AvgPrice=mean(price))
+
+diamonds %>%
+  group_by(cut) %>%
+  summarize(AvgPrice=mean(price),
+            SumCarat=sum(carat))
+
+diamonds %>%
+  group_by(cut, color) %>%
+  summarize(AvgPrice=mean(price),
+            AvgCarat=mean(carat))
+
+# arrange
+diamonds %>%
+  group_by(cut) %>%
+  summarize(AvgPrice=mean(price),
+            AvgCarat=mean(carat)) %>%
+  arrange(AvgPrice)
+
+diamonds %>%
+  group_by(cut) %>%
+  summarize(AvgPrice=mean(price),
+            AvgCarat=mean(carat)) %>%
+  arrange(desc(AvgPrice))
+
+# graph
+ggplot(meltAgg, aes(x=Year, y=Dollars)) +
+  geom_line(aes(group=Program.Name)) +
+  facet_wrap(~Program.Name) +
+  scale_x_continous(breaks=seq(from=2000, t0=2009, by=2)) +
+  theme(axis.text.x=element_text(angle=90, vjust=1, hjust=0)) +
+  scale_y_continuous(labels=multiple_format(extra=dollar, multiple="B"))
+
