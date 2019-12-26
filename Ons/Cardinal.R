@@ -32,7 +32,7 @@ LC.aggregate  <- mutate(LC.aggregate, CompleteRate=round(CompleteSum/EduSum*100,
 # save file
 write.csv(LC.aggregate, file="LC.aggregate.csv")
 
-# 
+# CntTitle
 LC.aggre.title <- aggregate(cbind(EduSum, CompleteSum) ~ CntTitle, 
                             Lifelong.Ca, FUN=sum)
 
@@ -44,12 +44,60 @@ LC.aggre.title <- LC.aggre.title %>%
 # save
 write.csv(LC.aggre.title, file="LC.aggre.title.csv")
 
-# analysis
+# load data
+LC.aggre.title <- read.csv("LC.aggre.title.csv", header=TRUE)
+
+# EduSum, over1000, analysis
 ESover1000 <- LC.aggre.title %>%
   arrange(desc(EduSum)) %>%
   filter(EduSum > 1000)
 
 ESover1000
+
+# EduSum, ESover1000, arrange, ggplot, CompleteSum > 1000
+ESover1000 %>%
+  filter(EduSum > 1000) %>%
+  arrange(desc(EduSum)) %>%
+  ggplot(aes(x=reorder(CntTitle, EduSum), y=EduSum)) +
+  theme(axis.text.x=element_text(angle=90)) +
+  coord_flip() +
+  geom_bar(stat="identity", fill="steelblue2") +
+  geom_bar(data=ESover1000[ESover1000$CompleteSum >= 1000, ],
+           aes(x=CntTitle, y=EduSum), fill='tomato1', stat='identity') +
+  geom_text(aes(label=EduSum), vjust=0.3, hjust=1.5, colour="white",
+            position=position_dodge(.9), size=3.5) + 
+  geom_text(aes(label=CompleteRate), vjust=1, colour="gray20",
+            position=position_dodge(.9), size=3)
+
+# CompleteRate, arrange desc
+ESover1000 %>%
+  filter(EduSum > 1000) %>%
+  arrange(desc(CompleteRate)) %>%
+  ggplot(aes(x=reorder(CntTitle, CompleteRate), y=EduSum)) +
+  theme(axis.text.x=element_text(angle=90)) +
+  coord_flip() +
+  geom_bar(stat="identity", fill="steelblue2") +
+  geom_bar(data=ESover1000[ESover1000$CompleteRate >= 40, ],
+           aes(x=CntTitle, y=EduSum), fill='tomato1', stat='identity') +
+  geom_bar(data=ESover1000[ESover1000$EduSum >= 3000, ],
+           aes(x=CntTitle, y=EduSum), fill='mediumpurple1', stat='identity') +
+  geom_text(aes(label=EduSum), vjust=0.3, hjust=1.5, colour="white",
+            position=position_dodge(.9), size=3.5) + 
+  geom_text(aes(label=CompleteRate), vjust=1, colour="gray20",
+            position=position_dodge(.9), size=3)
+
+# EduSum, filter < 100, arrange, ggplot, CompleteSum > 1000
+LC.aggre.title %>%
+  filter(EduSum < 50) %>%
+  arrange(desc(EduSum)) %>%
+  ggplot(aes(x=reorder(CntTitle, EduSum), y=EduSum)) +
+  theme(axis.text.x=element_text(angle=90)) +
+  coord_flip() +
+  geom_bar(stat="identity", fill="steelblue2") +
+  geom_text(aes(label=EduSum), vjust=0.3, hjust=2, colour="white",
+            position=position_dodge(.9), size=3.2) + 
+  geom_text(aes(label=CompleteRate), vjust=0.5, colour="gray20",
+            position=position_dodge(.9), size=3)
 
 # as.list
 EduSum <- ESover1000$EduSum
@@ -70,88 +118,193 @@ barplot(ECRatio,
         cex.names=0.8,
         font=1) #bold 2
 
-plot(ESover1000$CompleteRate, ylim=c(0, 100))
+# CompleteRate
+plot(ESover1000$CompleteRate, ylim=c(0, 100),
+     main="CompleteRate",
+     xlab="")
 lines(ESover1000$CompleteRate, ylim=c(0, 100))
+a <- seq(1:34)
+b <- ESover1000$CompleteRate
+Rate <- data.frame(a, b)
+text(a, b, labels=b, data=Rate, pos=3, cex=0.8)
 
-# EduSum arrange
-ESover1000 %>%
-  arrange(desc(EduSum)) %>%
-  filter(EduSum > 1000) %>%
-  ggplot(aes(x=reorder(CntTitle, EduSum), y=EduSum)) +
-  geom_bar(stat="identity", fill="dodgerblue1") +
-  theme(axis.text.x=element_text(angle=90)) +
-  coord_flip() +
-  geom_bar(data=ESover1000[ESover1000$CompleteSum >= 1000, ],
-           aes(x=CntTitle, y=EduSum), fill='tomato1', stat='identity') +
-  geom_text(aes(label=EduSum), vjust=0.3, hjust=1.5, colour="white",
-            position=position_dodge(.9), size=3.5) + 
-  geom_text(aes(label=CompleteRate), vjust=1, colour="gray20",
-            position=position_dodge(.9), size=3)
+# over 40%, blue
+faithful <- ESover1000$CompleteRate
+faith <- data.frame(a, faithful)
+over40 <- with(faith, faith[faithful >= 40,])
+plot(faith)
+points(over40, col="blue", pch=19)
 
+# barplot
+barplot(ESover1000$CompleteRate,
+        ylim=c(0,100),
+        names.arg=ESover1000$CntTitle,
+        las=2,
+        cex.names=0.8)
 
-
-# 정렬
-by_gisu <- aggregate(EduSum ~ Cardinal, gisu, sum)
-by_gisu$gisu <- c(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-
-# 정렬 다시하고
-by_gisu <- by_gisu[c(order(by_gisu$gisu)), ]
-by_gisu
-
-plot(by_gisu$gisu, by_gisu$EduSum)
-by_gisu_10000 <- with(by_gisu, by_gisu[EduSum > 10000, ])
-points(by_gisu_10000$gisu, by_gisu_10000$EduSum, col = "red", pch = 19)
-
-# 년월별 수강인원
-# gisu$OprStart 날짜변수로 변경
-by_Oprym <- aggregate(EduSum ~ OprStart, gisu, sum)
-by_Oprym
-
-by_Oprym$OprStart <- as.Date(by_Oprym$OprStart)
-str(by_Oprym)
-plot(by_Oprym)
-
-# 운영시작일별 수강인원
-by_Oprym %>%
-  ggplot(aes(x=OprStart, y=EduSum)) +
-  geom_point(size=2) +
-  geom_text(aes(label=OprStart), vjust = -1.5, color = "maroon", size=2)
-
-# 선 추가
-by_Oprym %>%
-  ggplot(aes(x=OprStart, y=EduSum)) +
-  geom_point(size=2) +
-  geom_text(aes(label=OprStart), vjust = -1.5, color = "maroon", size=2) +
-  stat_smooth(method=loess, se=FALSE, colour = "black")
-
-
-###############################################################################
 # 연도별 수료율
 OprResult.join %>%
+  filter(OprType == "평생과정" & SubOT == "기수제") %>%
   select(Year, EduSum, CompleteSum) %>%
   group_by(Year) %>%
   summarise_each(funs(sum(., na.rm=TRUE))) %>%
   mutate(Rate = round(CompleteSum/EduSum*100, 1)) %>%
   arrange(Year)
 
-# 과정별 수료인원
+# 정렬
+byGisu <- OprResult.join %>%
+          filter(OprType == "평생과정" & SubOT == "기수제")
+
+byGisu <- aggregate(cbind(EduSum, CompleteSum) ~ OprStart + Cardinal,
+                    data=byGisu, FUN=sum)
+byGisu
+byGisu <- byGisu %>% arrange(OprStart)
+
+# 년월별 수강인원
+# gisu$OprStart 날짜변수로 변경
+byOprym <- aggregate(EduSum ~ OprStart, byGisu, sum)
+byOprym$OprStart <- as.Date(by_Oprym$OprStart)
+plot(byOprym)
+plot.ts(byOprym$EduSum)
+
+# 운영시작일별 수강인원
+byOprym %>%
+  ggplot(aes(x=OprStart, y=EduSum)) +
+  geom_point(size=2) + 
+  geom_text(aes(label=OprStart), vjust = -1.5, color = "steelblue2", size=2)
+
+# CntId, EduSum, CompleteSum, CompleteRate
 Content <- OprResult.join %>%
+  filter(OprType == "평생과정" & SubOT == "기수제") %>%
+  filter(EduSum != 0 & CompleteSum != 0) %>%
   select(CntId, EduSum, CompleteSum) %>%
   group_by(CntId) %>%
   summarise_each(funs(sum(., na.rm=TRUE))) %>%
   mutate(Rate = round(CompleteSum/EduSum*100, 1)) %>%
   arrange(CntId)
 
-ggplot(Content, aes(CntId, Rate)) +
-  geom_point(aes(size=EduSum), alpha=1/3) +
+# rate mis calculate
+Content$Rate <- NULL
+
+# re calculate
+Content$Rate <- round(Content$CompleteSum/Content$EduSum*100, 1)
+Content
+
+# by content, CompleteRate, color=EduSum, size=EduSum, geom_smooth
+Content %>%
+  ggplot(aes(x=CntId, y=Rate, color=EduSum)) +
+  scale_color_gradient(low="steelblue1", high="violetred1") +
+  geom_point(aes(size=EduSum), alpha=1/1) +
   geom_smooth()
 
-# 과정별, 연도별, 운영실적
-Content_Year <- OprResult.join %>%
-  select(CntId, CntTitle, Year, EduSum, CompleteSum) %>%
+# CntId, Year, EduSum, CompleteSum, CompleteRate
+OprYear <- OprResult.join %>%
+  filter(OprType == "평생과정" & SubOT == "기수제") %>%
+  filter(EduSum != 0 & CompleteSum != 0) %>%
+  select(CntId, Year, EduSum, CompleteSum) %>%
   group_by(CntId, Year) %>%
   summarise_each(funs(sum(., na.rm=TRUE))) %>%
-  mutate(Rate = round(CompleteSum/EduSum*100, 1)) #%>% arrange(CntId)
+  mutate(Rate = round(CompleteSum/EduSum*100, 1)) %>%
+  arrange(CntId)
+
+OprYear$CntId <- as.factor(OprYear$CntId)
+
+un2019 <- OprYear %>%
+             filter(Year < 2019)
+
+un2019id <- un2019 %>%
+            select(CntId, Year, EduSum)
+
+write.csv(un2019id, file="un2019id.csv", row.names=FALSE)
+
+# in Excel, countif, CntId > 3, edit, save
+# load file
+un2019.3year <- read.csv("un2019id.3year.csv", header=TRUE)
+un2019.3year
+
+un2019.3over <- un2019.3year %>%
+                filter(Count == 3)
+
+un2019.3over
+uni.CntId <- unique(un2019.3over$CntId)
+
+mx.EduSum <- un2019.3over$EduSum
+mx.EduSum
+
+EduSum.mx <- matrix(mx.EduSum, ncol=3)
+Cagr <- data.frame(EduSum.mx)
+names(Cagr) <- c("2016", "2017", "2018")
+Cagr$CntId <- uni.CntId
+Cagr
+
+# in Excel, calculate, CAGR, save
+# load file
+CAGR <- read.csv("OprResult.lifelong.CAGR.csv", header=TRUE)
+CAGR
+
+CAGR$EduSum.3year <- CAGR$X2016+CAGR$X2017+CAGR$X2018
+
+# inner join, CntId, CntTitle
+library(sqldf)
+
+# test, drv="SQLite"
+sqldf("select * from iris limit 5", drv="SQLite")
+
+# loda file
+CntList <- read.csv("CntList.csv", header=TRUE)
+
+# Inner Join
+CAGR_join <- sqldf("select *
+      from CntList
+      inner join CAGR
+      on CntList.CntId = CAGR.CntId", drv="SQLite")
+
+# join confirm
+sqldf("select * from CAGR_join", drv="SQLite", row.names=TRUE)
+
+# write
+write.csv(CAGR_join, file="CAGR_join.csv", row.names=FALSE)
+
+# load file
+CAGR_join <- read.csv("CAGR_join.csv", header=TRUE)
+
+CAGR_join %>%
+  filter(CAGR2 > 0) %>%
+  ggplot(aes(x=factor(CntId), y=CAGR2*100)) +
+  geom_bar(stat="identity", fill="steelblue2") +
+  geom_text(aes(label=EduSum.3year), vjust=-1, hjust=0.5, colour="black",
+            position=position_dodge(.9), size=3.1) + 
+  geom_text(aes(label=CAGR2), vjust=1.2, hjust=0.5, colour="black",
+            position=position_dodge(.9), size=3)
+
+# CntList
+CAGR_positive <- CAGR_join %>%
+  filter(CAGR2 > 0) %>%
+  select(CntId, CntTitle, EduSum.3year, CAGR2)
+
+# save
+write.csv(CAGR_positive, file="CAGR_positive.csv", row.names=FALSE)
+
+# CntList, arrange
+CAGR_positive_order <- CAGR_join %>%
+  filter(CAGR2 > 0) %>%
+  arrange(desc(EduSum.3year)) %>%
+  select(CntId, CntTitle, EduSum.3year, CAGR2)
+
+# save
+write.csv(CAGR_positive_order, file="CAGR_positive_order.csv", row.names=FALSE)
+
+# positive, negative, TF
+CAGR_join$pos <- CAGR_join$CAGR2 >= 0 #TRUE, FALSE
+CAGR_join
+
+# graph
+ggplot(CAGR_join, aes(x=factor(CntId), y=CAGR2, fill=pos)) +
+  geom_bar(stat="identity", position="identity") +
+  theme(axis.text.x=element_blank())
+
+
+
 
 # Correlation Positive > .70
 Upper_70 <- Content_Year %>%
@@ -387,3 +540,4 @@ plot(Model.step)
 par(mfrow=c(1,1))
 qqnorm(Corr_EC$EduSum)
 qqline(Corr_EC$EduSum)
+
