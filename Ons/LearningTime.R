@@ -7,12 +7,16 @@ setwd("D:/rstudio/ons")
 search()
 system.time(search())
 
+# install package
+# first, last data
 install.packages("data.table")
 library(data.table)
 library(ggplot2)
 library(dplyr)
 
-LearningTime <- fread("LearningTime.csv") #too much data, use fread
+# load file
+# too much data, use fread
+LearningTime <- fread("LearningTime.csv") 
 
 dim(LearningTime)
 # 394204  18
@@ -41,7 +45,9 @@ write.csv(LearningTime, file = "LearningTime2.csv", row.names=FALSE)
 LearningTime2 <- fread("LearningTime2.csv")
 names(LearningTime2)
 
+# change file name
 LearningTime <- LearningTime2
+LearningTime <- data.table(LearningTime)
 
 # 전체 수료여부
 table(LearningTime$compStatus)
@@ -54,6 +60,8 @@ barplot(table(LearningTime$compStatus), type = "b", lwd = 3)
 
 # table, progress
 prgRate <- table(LearningTime$progress)
+prgRate
+
 prgRate <- data.table(prgRate)
 prgRate
 
@@ -69,7 +77,290 @@ plot(LearningTime$progress,
 ggplot(LearningTime, aes(idx, progress)) +
   geom_point(shape=20, alpha=1/3)
 
-# white space
+# learningtime, progress, barplot, x=idx
+LearningTime %>%
+  filter(gender == 1 | gender == 2) %>%
+  ggplot(aes(x=idx, y=progress)) +
+  geom_point(aes(colour = gender), size=0.4) +
+  facet_wrap(~ gender, ncol=2)
+
+# startDate
+startDate <- LearningTime[order(LearningTime$startDate, LearningTime$idx), ]
+
+# startDate, plot
+startDate %>%
+  filter(gender == 1 | gender == 2) %>%
+  ggplot(aes(x=startDate, y=progress)) +
+  geom_point(aes(colour=gender), size=0.4)
+
+# progress != 0 | progress != 100
+startDate %>%
+  filter(progress != 0 | progress != 100) %>%
+  filter(gender == 1 | gender == 2) %>%
+  ggplot(aes(x=startDate, y=progress)) +
+  geom_point(aes(colour=gender), size=0.4)
+
+# startDate
+startDate.Title <- LearningTime[order(LearningTime$startDate, LearningTime$title), ]
+
+# startDate.Title, plot
+startDate.Title %>%
+  filter(gender == 1 | gender == 2) %>%
+  ggplot(aes(x=startDate, y=progress)) +
+  geom_point(aes(colour=gender), size=0.4)
+
+# startDate.Title, progress != 0 | progress != 100
+startDate.Title %>%
+  filter(progress != 0 | progress != 100) %>%
+  filter(gender == 1 | gender == 2) %>%
+  ggplot(aes(x=startDate, y=progress)) +
+  geom_point(aes(colour=gender), size=0.4)
+
+# Authentic Learner
+# hhmmss
+boxplot(LearningTime$learningTimeSeconds)
+quantile(LearningTime$learningTimeSeconds)
+
+# except upper outlier
+Common <- LearningTime %>%
+          filter(learningTimeSeconds != 0 & learningTimeSeconds < 72000)
+
+Common <- data.table(Common)
+Common
+
+# order, title, startDate, idx
+Common.order <- Common[order(title, startDate, idx), ]
+Common.order <- data.table(Common.order)
+
+# by title
+Common.Title <- aggregate(id ~ title, data=Common.order, FUN=length)
+
+# save file
+write.csv(Common.Title, file="Common.Title.csv", row.names=FALSE)
+
+# excel, edit, save as
+# file name = Common.Title.refine.csv
+
+# load file
+Common.Title.refine <- fread("Common.Title.refine.csv")
+Common.Title.refine
+
+# by title, sum
+Title.sum <- aggregate(id ~ title, data=Common.Title.refine, FUN=sum)
+Title.sum.desc <- Title.sum %>%
+                  arrange(desc(id))
+
+Title.sum.desc %>% head(10)
+
+# save file
+write.csv(Title.sum.desc, file="Title.sum.desc.csv", row.names=FALSE)
+
+# upper1500, barplot, graph, coord_flip()
+Title.sum.desc %>%
+  filter(id >= 1500) %>%
+  ggplot(aes(x=reorder(title, id), y=id)) +
+  theme(axis.text.x=element_text(angle=90)) +
+  coord_flip() +
+  geom_bar(stat="identity", fill="steelblue2") +
+  geom_bar(data=Title.sum.desc[Title.sum.desc$id >= 5000, ],
+           aes(x=title, y=id), fill='tomato1', stat='identity') +
+  geom_text(aes(label=id), vjust=0.3, hjust=1.5, colour="white",
+            position=position_dodge(.9), size=3.5) 
+
+summary(LearningTime)
+class(LearningTime)
+LearningTime$gender <- as.numeric(as.factor(LearningTime$gender))
+LearningTime$empYN <- as.numeric(as.factor(LearningTime$empYN))
+LearningTime$birthdate <- as.Date(as.factor(LearningTime$birthdate))
+LearningTime$startDate <- as.Date(as.factor(LearningTime$startDate))
+LearningTime$endDate <- as.Date(as.factor(LearningTime$endDate))
+LearningTime$learningTime <- as.numeric(as.factor(LearningTime$learningTime))
+LearningTime$hhmmss <- as.numeric(as.factor(LearningTime$hhmmss))
+
+write.csv(LearningTime, file="LearningTime2.csv", row.names=FALSE)
+
+# NCS 직기초(정보능력) 수강생은?
+ncsinfo <- LearningTime %>%
+           filter(title %like% "정보능력") #8223
+
+write.csv(ncsinfo, file="ncsinfo.csv", row.names=FALSE)
+summary(ncsinfo)
+
+# by gender 
+ncsinfo %>%
+  filter(gender == 1 | gender == 2) %>%
+  group_by(gender) %>%
+  count(gender) %>%
+  ggplot(aes(x=gender, y=n)) +
+  geom_bar(aes(fill=factor(gender)), stat="identity") +
+  geom_text(aes(label=n), vjust=1.5, size=5, color="white")
+
+# by company
+ncsinfo %>%
+  filter(gender == 1 | gender == 2) %>%
+  filter(company != 'NULL' & company != "" & company != '없음') %>%
+  group_by(company) %>%
+  count(company) %>%
+  arrange(desc(n)) %>%
+  filter(n > 20) %>%
+  ggplot(aes(x=reorder(company, n), y=n)) +
+  geom_bar(aes(fill=factor(company)), stat="identity") +
+  geom_text(aes(label=n), vjust=1.1, size=4, color="white") +
+  theme(axis.text.x=element_text(angle=90))
+
+# C 프로그래밍 수강생은?
+cpro <- LearningTime %>%
+  filter(title %like% "C 프로" | title %like% "C프로" & !title %like% "임베디드") # 9783
+
+write.csv(cpro, file="cpro.csv", row.names=FALSE)
+summary(cpro)
+
+# by gender 
+cpro %>%
+  filter(gender == 1 | gender == 2) %>%
+  group_by(gender) %>%
+  count(gender) %>%
+  ggplot(aes(x=gender, y=n)) +
+  geom_bar(aes(fill=factor(gender)), stat="identity") +
+  geom_text(aes(label=n), vjust=1.5, size=5, color="white")
+
+# by company
+cpro %>%
+  filter(gender == 1 | gender == 2) %>%
+  filter(company != 'NULL' & company != "" & company != '없음') %>%
+  group_by(company) %>%
+  count(company) %>%
+  arrange(desc(n)) %>%
+  filter(n > 50) %>%
+  ggplot(aes(x=reorder(company, n), y=n)) +
+  geom_bar(aes(fill=factor(company)), stat="identity") +
+  geom_text(aes(label=n), vjust=1.1, size=4, color="white") +
+  theme(axis.text.x=element_text(angle=90))
+
+# 반도체 공정 기초 수강생은?
+semi <- LearningTime %>%
+        filter(title %like% "반도체 공정") #9783
+
+write.csv(semi, file="semi.csv", row.names=FALSE)
+summary(semi)
+
+# by gender 
+semi %>%
+  filter(gender == 1 | gender == 2) %>%
+  group_by(gender) %>%
+  count(gender) %>%
+  ggplot(aes(x=gender, y=n)) +
+  geom_bar(aes(fill=factor(gender)), stat="identity") +
+  geom_text(aes(label=n), vjust=1.5, size=5, color="white")
+
+# by company
+semi %>%
+  filter(gender == 1 | gender == 2) %>%
+  filter(company != 'NULL' & company != "" & company != '없음') %>%
+  group_by(company) %>%
+  count(company) %>%
+  arrange(desc(n)) %>%
+  filter(n > 30) %>%
+  ggplot(aes(x=reorder(company, n), y=n)) +
+  geom_bar(aes(fill=factor(company)), stat="identity") +
+  geom_text(aes(label=n), vjust=1.1, size=4, color="white") +
+  theme(axis.text.x=element_text(angle=90))
+
+# 오피스 해적단! 엑셀 2013 수강생은?
+excel <- LearningTime %>%
+         filter(title %like% "엑셀" & !title %like% "리더십") #7951
+
+write.csv(excel, file="excel.csv", row.names=FALSE)
+summary(excel)
+
+# by gender 
+excel %>%
+  filter(gender == 1 | gender == 2) %>%
+  group_by(gender) %>%
+  count(gender) %>%
+  ggplot(aes(x=gender, y=n)) +
+  geom_bar(aes(fill=factor(gender)), stat="identity") +
+  geom_text(aes(label=n), vjust=1.5, size=5, color="white")
+
+# by company
+excel %>%
+  filter(gender == 1 | gender == 2) %>%
+  filter(company != 'NULL' & company != "" & company != '없음') %>%
+  group_by(company) %>%
+  count(company) %>%
+  arrange(desc(n)) %>%
+  filter(n > 45) %>%
+  ggplot(aes(x=reorder(company, n), y=n)) +
+  geom_bar(aes(fill=factor(company)), stat="identity") +
+  geom_text(aes(label=n), vjust=1.1, size=4, color="white") +
+  theme(axis.text.x=element_text(angle=90))
+
+# AutoCAD를 활용한 기계도면(기본) 수강생은?
+autocad <- LearningTime %>%
+           filter(title %like% "AutoCAD") #
+
+write.csv(autocad, file="autocad.csv", row.names=FALSE)
+summary(autocad)
+
+# by gender 
+autocad %>%
+  filter(gender == 1 | gender == 2) %>%
+  group_by(gender) %>%
+  count(gender) %>%
+  ggplot(aes(x=gender, y=n)) +
+  geom_bar(aes(fill=factor(gender)), stat="identity") +
+  geom_text(aes(label=n), vjust=1.5, size=5, color="white")
+
+# by company
+autocad %>%
+  filter(gender == 1 | gender == 2) %>%
+  filter(company != 'NULL' & company != "" & company != '없음') %>%
+  group_by(company) %>%
+  count(company) %>%
+  arrange(desc(n)) %>%
+  filter(n > 40) %>%
+  ggplot(aes(x=reorder(company, n), y=n)) +
+  geom_bar(aes(fill=factor(company)), stat="identity") +
+  geom_text(aes(label=n), vjust=1.1, size=4, color="white") +
+  theme(axis.text.x=element_text(angle=90))
+
+# Common, by id, count idx, FUN=length
+id.count <- aggregate(idx ~ id, data=Common, FUN=length)
+id.count %>% 
+  arrange(desc(idx)) %>%
+  head(13)
+
+# Common, by id, learningtimeseconds, FUN=sum
+id.learningtime <- aggregate(cbind(learningTimeSeconds) ~ id,
+                             data=Common, FUN=sum)
+# learningtime cumm
+id.learningtime %>%
+  arrange(desc(learningTimeSeconds)) %>%
+  mutate(hour=round(learningTimeSeconds/3600, 1), day=round(hour/24, 1)) %>%
+  head(10)
+
+# learningtime cumm, koreatech
+id.learningtime %>%
+  arrange(desc(learningTimeSeconds)) %>%
+  mutate(hour=round(learningTimeSeconds/3600, 1), day=round(hour/24, 1)) %>%
+  filter(id %like% "koreatech") %>%
+  head(20)
+  
+# gender 1, 2, progress 100, learningtime < 1800, sampling -> attendace join
+LearningTime %>%
+  filter(gender == 1 | gender == 2) %>%
+  filter(progress == 100) %>%
+  filter(learningTimeSeconds < 1800) %>%
+  select(id, gender, progress, learningTimeSeconds) %>%
+  sample_n(10)
+
+# find
+LearningTime %>%
+  filter(id == "k9u9j9@naver.com")
+
+
+############################################################################
+# find white space
 LearningTime %>%
   filter(idx > 150000 & idx < 200000) %>%
   ggplot(aes(x=idx, y=progress)) +
@@ -79,6 +370,13 @@ LearningTime %>%
 idxWS <- LearningTime %>%
   filter(idx > 170000 & idx < 182000)
 
+summary(idxWS)
+
+# startDate, endDate
+idxWS %>% 
+  select(title, startDate) %>%
+  arrange(startDate)
+
 # idxWS, title count
 idxWS.title <- idxWS %>%
   group_by(title) %>%
@@ -86,23 +384,85 @@ idxWS.title <- idxWS %>%
   arrange(desc(N))
 
 # idxWS, count progress
-idsWS.prog <- LearningTime %>%
+idxWS.prog <- LearningTime %>%
   filter(idx > 170000 & idx < 182000) %>%
   group_by(progress) %>%
   summarise(N=n())
 
-apply(idsWS.prog[1, ], 2, sum)
-apply(idsWS.prog[2:209, ], 2, sum)
-apply(idsWS.prog[210, ], 2, sum)
+# confirm
+table(idxWS$progress)
+
+apply(idxWS.prog[1, ], 2, sum)
+apply(idxWS.prog[2:209, ], 2, sum)
+apply(idxWS.prog[210, ], 2, sum)
 
 x <- c("0%", "0.1%~99.9%", "100%")
 y <- c(6431, 391, 5177)
-idsWS.freq <- data.frame(x, y)
-idsWS.freq
-barplot(idsWS.freq$y, ylim=c(0, 7000))
+idxWS.freq <- data.frame(x, y)
+idxWS.freq
 
-# histogram
-hist(LearningTime$progress)
+# barplot graph
+barplot(idxWS.freq$y,
+        ylim=c(0, 7000),
+        names.arg=c("0%", "0.1%~99.9%", "100%"),
+        col=c("steelblue2"),
+        border=c("blue"),
+        main="idxWS progress rate count",
+        xlab="Progress Rate",
+        ylab="Learner")
+
+# ggplot, graph
+ggplot(idxWS.freq, aes(x=x, y=y)) +
+  geom_bar(stat="identity", fill="steelblue2") +
+  geom_col(mapping=aes(fill=x)) +
+  geom_text(aes(label=y), vjust=1.2, color="white", size=8) +
+  ggtitle(label="idxWS.freq") +
+  labs(x='Progress Rate Section',
+       y='Learners')
+
+# learningtime, progress, barplot
+LearningTime %>%
+  ggplot(aes(progress)) +
+  geom_bar(stat="bin", fill="steelblue2", color="black")
+
+# LearningTime, progress, by gender(1, 2)
+LearningTime %>%
+  filter(gender == 1 | gender == 2) %>%
+  ggplot(aes(progress)) +
+  geom_bar(stat="bin", fill="steelblue2", color="black") +
+  facet_wrap(~ gender, ncol= 2)
+
+# LearningTime, progress, by title, N > 
+Title <- LearningTime %>%
+  filter(gender == 1 | gender == 2) %>%
+  group_by(title) %>%
+  summarise(N=n()) %>%
+  arrange(desc(N))
+
+# 특정 과정(filter 과정명), 진도율
+LearningTime %>%
+  filter(gender == 1 | gender == 2) %>%
+  filter(title == "AVR Atmega128 프로그래밍_2") %>%
+  ggplot(aes(progress)) +
+  geom_bar(stat="bin", fill="steelblue2", color="black")
+
+# 100%, 0% 제외한 진도율 평균
+Prog.filter1 <- LearningTime %>%
+  filter(progress != 0 & progress != 100) %>%
+  group_by(title) %>%
+  summarise(N=n(), AvgProg = mean(progress)) %>%
+  arrange(desc(N, AvgProg))
+
+# 100명 이상, 진도율 50% 이상인 과정
+Prog.filter1 %>%
+  filter(N >= 100 & AvgProg >= 40)
+
+# Prog.filter1, graph
+Prog.filter1 %>%
+  ggplot() +
+  geom_bar(aes(N), stat="bin", fill="steelblue2", color="black")
+
+# progtest
 
 # compStatus == 2, progress distribution
 CS2.prog.dist <- LearningTime %>%
