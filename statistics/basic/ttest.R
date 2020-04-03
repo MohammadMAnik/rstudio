@@ -84,3 +84,8 @@ plot(T2)
 var.test(T1, T2)
 
 t.test(T1, T2, var.equal=TRUE)
+
+uni <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+plot(uni)
+hist(uni)
+
